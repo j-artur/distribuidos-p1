@@ -59,12 +59,15 @@ public class Listener implements Runnable {
                     }
                 } else {
                     System.out.println("Broadcast from " + received.getOrigin() + ": " + received.getContent());
-                    for (AddressAndPort address : Process.getAddressMap().values()) {
+                    for (var entry : Process.getAddressMap().entrySet()) {
+                        if (entry.getKey().equals(1))
+                            continue;
+
                         DatagramPacket newPacket = new DatagramPacket(
                                 receiveBuffer,
                                 receiveBuffer.length,
-                                address.getAddress(),
-                                address.getPort());
+                                entry.getValue().getAddress(),
+                                entry.getValue().getPort());
                         socket.send(newPacket);
                     }
                 }

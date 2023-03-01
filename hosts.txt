@@ -1,4 +1,4 @@
-localhost
-localhost
-localhost
-localhost
+10.70.1.25
+10.70.1.25
+10.70.1.99
+10.70.1.99
