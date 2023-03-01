@@ -33,20 +33,7 @@ public class Sender implements Runnable {
                 this.nextHost.getAddress(),
                 this.nextHost.getPort());
             socket.send(packet);
-            System.out.println("Sent: " + list);
-
-            byte[] readBuffer = new byte[1024];
-
-            DatagramPacket receiverPacket = new DatagramPacket(readBuffer, readBuffer.length);
-
-            // retrieve result
-            socket.receive(receiverPacket);
-
-            InputStream inputStream = new ByteArrayInputStream(readBuffer);
-            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-            List<Message> receivedList = (List<Message>) objectInputStream.readObject();
-
-            System.out.println("Received: " + receivedList);
+            System.out.println("Sent: " + list);            
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());
         } catch (IOException e) {
