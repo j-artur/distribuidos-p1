@@ -1,0 +1,1 @@
+rm -rf */*.class && javac ring/P1.java ring/P2.java ring/P3.java ring/P4.java star/P1.java star/P2.java star/P3.java star/P4.java
