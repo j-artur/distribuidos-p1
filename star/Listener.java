@@ -18,11 +18,11 @@ public class Listener implements Runnable {
 
     @Override
     public void run() {
-        try (DatagramSocket socket = new DatagramSocket(port, host)) {
+        try (DatagramSocket socket = new DatagramSocket(this.port, this.host)) {
             byte[] receiveBuffer = new byte[1024];
             DatagramPacket packet = new DatagramPacket(receiveBuffer, receiveBuffer.length);
             while (true) {
-                socket.receive(packet);
+                socket.receive(packet);                
 
                 InputStream inputStream = new ByteArrayInputStream(packet.getData());
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
@@ -33,8 +33,6 @@ public class Listener implements Runnable {
                     continue;
                 }
 
-                PrimaryProcess primaryProcess = (PrimaryProcess) this.type;
-
                 if (received.getDestination() instanceof Unicast) {
                     Unicast unicast = (Unicast) received.getDestination();
 
@@ -43,9 +41,9 @@ public class Listener implements Runnable {
                     if (destination == this.id) {
                         System.out.println("Received from " + received.getOrigin() + ": " + received.getContent());
                     } else {
-                        Integer nextPort = primaryProcess.getPorts().get(destination);
+                        AddressAndPort nextAddress = Process.getAddressMap().get(destination);
 
-                        if (nextPort == null) {
+                        if (nextAddress == null) {
                             System.out.println("No such destination: " + destination);
                             continue;
                         }
@@ -53,20 +51,20 @@ public class Listener implements Runnable {
                         DatagramPacket newPacket = new DatagramPacket(
                                 receiveBuffer,
                                 receiveBuffer.length,
-                                host,
-                                nextPort);
+                                nextAddress.getAddress(),
+                                nextAddress.getPort());
                         socket.send(newPacket);
                         System.out.println("Re-sent from " + received.getOrigin() + " to " + destination + ": "
                                 + received.getContent());
                     }
                 } else {
                     System.out.println("Broadcast from " + received.getOrigin() + ": " + received.getContent());
-                    for (int port : primaryProcess.getPorts().values()) {
+                    for (AddressAndPort address : Process.getAddressMap().values()) {
                         DatagramPacket newPacket = new DatagramPacket(
                                 receiveBuffer,
                                 receiveBuffer.length,
-                                host,
-                                port);
+                                address.getAddress(),
+                                address.getPort());
                         socket.send(newPacket);
                     }
                 }

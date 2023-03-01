@@ -5,40 +5,45 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 interface ProcessType {
 }
 
 class PrimaryProcess implements ProcessType {
-    private Map<Integer, Integer> ports;
-
-    public PrimaryProcess(Map<Integer, Integer> ports) {
-        this.ports = ports;
-    }
-
-    public Map<Integer, Integer> getPorts() {
-        return ports;
-    }
 }
 
 class SecondaryProcess implements ProcessType {
 }
 
 public class Process implements Runnable {
-    private static InetAddress host = null;
-    public static final int PRIMARY_PORT = 5001;
+    private static Map<Integer, AddressAndPort> addressMap;
+
+    public static Map<Integer, AddressAndPort> getAddressMap() {
+        return addressMap;
+    }
+
     private int id;
+    private InetAddress host;
     private int port;
 
     Listener listener;
     Sender sender;
 
-    {
+    static {
         try {
-            String hostName = Files.readString(Path.of("host.txt"));
+            List<String> hosts = Files.readString(Path.of("hosts.txt"))
+                .lines()
+                .collect(Collectors.toList());
 
-            host = InetAddress.getByName(hostName);
+            addressMap = Map.of(
+                1, new AddressAndPort(InetAddress.getByName(hosts.get(0)), 5001),
+                2, new AddressAndPort(InetAddress.getByName(hosts.get(1)), 5002),
+                3, new AddressAndPort(InetAddress.getByName(hosts.get(2)), 5003),
+                4, new AddressAndPort(InetAddress.getByName(hosts.get(3)), 5004)
+            );
         } catch (UnknownHostException e) {
             System.out.println("Unknown host: " + e.getMessage());
         } catch (IOException e) {
@@ -46,19 +51,20 @@ public class Process implements Runnable {
         }
     }
 
-    public Process(int id, int port, ProcessType type) {
+    public Process(int id, InetAddress host, int port, ProcessType type) {
         this.id = id;
+        this.host = host;
         this.port = port;
 
         listener = new Listener(id, host, port, type);
-        sender = new Sender(id, host, port, type);
+        sender = new Sender(id, type);
     }
 
     @Override
     public void run() {
         new Thread(listener).start();
 
-        System.out.println("Process " + this.id + " is listening on port " + this.port);
+        System.out.println("Process " + this.id + " is listening on " + this.host + ":" + this.port);
 
         sender.run();
     }

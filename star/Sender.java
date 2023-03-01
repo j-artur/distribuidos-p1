@@ -6,12 +6,10 @@ import java.util.*;
 
 public class Sender implements Runnable {
     private int id;
-    private InetAddress host;
     ProcessType type;
 
-    public Sender(int id, InetAddress host, int port, ProcessType type) {
+    public Sender(int id, ProcessType type) {
         this.id = id;
-        this.host = host;
         this.type = type;
     }
 
@@ -37,8 +35,8 @@ public class Sender implements Runnable {
             DatagramPacket packet = new DatagramPacket(
                     writeBuffer,
                     writeBuffer.length,
-                    this.host,
-                    Process.PRIMARY_PORT);
+                    Process.getAddressMap().get(1).getAddress(),
+                    Process.getAddressMap().get(1).getPort());
             socket.send(packet);
             System.out.println("Sent: " + msg.getContent());
         } catch (SocketException e) {

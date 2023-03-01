@@ -3,25 +3,22 @@ package ring;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.List;
 
 public class Listener implements Runnable {
    private int id;
-   private InetAddress host;
-   private int port;
-   private int nextPort;
+   private AddressAndPort host;
+   private AddressAndPort nextHost;
 
-   public Listener(int id, InetAddress host, int port, int nextPort) {
+   public Listener(int id, AddressAndPort host,  AddressAndPort nextHost) {
       this.id = id;
       this.host = host;
-      this.port = port;
-      this.nextPort = nextPort;
+      this.nextHost = nextHost;
    }
 
    @Override
    public void run() {
-      try (DatagramSocket socket = new DatagramSocket(port, host)) {
+      try (DatagramSocket socket = new DatagramSocket(host.getPort(), host.getAddress())) {
          byte[] receiveBuffer = new byte[1024];
          DatagramPacket packet = new DatagramPacket(receiveBuffer, receiveBuffer.length);
          while (true) {
@@ -51,7 +48,11 @@ public class Listener implements Runnable {
 
             byte[] sendBuffer = outputStream.toByteArray();
 
-            DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, host, nextPort);
+            DatagramPacket sendPacket = new DatagramPacket(
+               sendBuffer,
+               sendBuffer.length,
+               nextHost.getAddress(),
+               nextHost.getPort());
             // send result to the client
             socket.send(sendPacket);
             System.out.println("Sent: " + newMsg.toString());

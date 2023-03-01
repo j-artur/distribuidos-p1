@@ -6,13 +6,11 @@ import java.util.*;
 
 public class Sender implements Runnable {
     private int id;
-    private InetAddress host;
-    private int port;
+    private AddressAndPort nextHost;
 
-    public Sender(int id, InetAddress host, int port) {
+    public Sender(int id, AddressAndPort nextHost) {
         this.id = id;
-        this.host = host;
-        this.port = port;
+        this.nextHost = nextHost;
     }
 
     public void send() {
@@ -29,7 +27,11 @@ public class Sender implements Runnable {
 
             byte[] writeBuffer = outputStream.toByteArray();
 
-            DatagramPacket packet = new DatagramPacket(writeBuffer, writeBuffer.length, this.host, this.port);
+            DatagramPacket packet = new DatagramPacket(
+                writeBuffer,
+                writeBuffer.length,
+                this.nextHost.getAddress(),
+                this.nextHost.getPort());
             socket.send(packet);
             System.out.println("Sent: " + list);
 
